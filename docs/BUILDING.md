@@ -4,6 +4,53 @@ This guide explains source builds on each supported platform. Start with the bui
 
 ## Build Notes
 
+Whisper builds require **Rust 1.88.0 or newer**, a **C++17** compiler, and
+**CMake 3.19 or newer** for Vulkan. Use Visual Studio 2022/MSVC on Windows.
+Vulkan also requires the Vulkan SDK with `glslc` and a working GPU driver.
+OpenBLAS is optional: `--features openblas` requires `BLAS_INCLUDE_DIRS` and
+an installed OpenBLAS library; the sys crate selects `GGML_BLAS_VENDOR=OpenBLAS`.
+Metal/CoreML remain enabled on macOS; CUDA, HIP and OpenMP need their respective
+toolchains. HIP uses `GGML_HIP` in the updated backend.
+
+### Whisper upgrade validation
+
+Use a fresh `CARGO_TARGET_DIR` so whisper-rs-sys cannot reuse copied C++ sources
+from an older build. Keep the existing target directory and user data intact.
+From the repository root, on a host with the native Tauri build prerequisites:
+
+```bash
+export CARGO_TARGET_DIR=/tmp/meetily-whisper-upgrade-target  # choose an unused path
+cargo tree --locked -p whisper-rs
+cargo tree --locked -p whisper-rs-sys
+cargo check --locked -p meetily
+cargo test --locked -p meetily whisper_engine
+cargo check --locked -p meetily --features vulkan
+python3 tools/whisper-vulkan-regression/run.py --build-dir /tmp/meetily-whisper-softmax
+```
+
+Use `python` on Windows and set a fresh `$env:CARGO_TARGET_DIR` in PowerShell.
+The Python runner discovers whisper.cpp through `cargo metadata --locked`; it
+never vendors or edits registry sources. Its build directory must be empty/new.
+It configures CMake, builds Release, and runs the two CTest softmax cases. CTest
+JUnit reporting requires **CTest 3.21 or newer** (the runner's additional
+requirement). Exit 77 means GPU tests were skipped; other failures return 1.
+A skipped test does not complete native acceptance. The tests execute Vulkan
+softmax with and without an attention mask, checking finite values, row sums,
+and the stable CPU reference with an absolute tolerance of `1e-4`.
+
+Also compile the macOS default (Metal/CoreML) and CUDA/HIP/OpenBLAS/OpenMP
+configurations on suitable hosts. For Windows distribution builds retain the
+existing workflow's `CMAKE_PROJECT_INCLUDE` portability hook and
+`RUSTFLAGS=-C target-cpu=x86-64-v2`; check actual compiler commands for AVX2 and
+absence of AVX-512 specialization. Do not dispatch or publish workflows merely
+for validation. The numerical runner applies the same hook on Windows.
+
+Native acceptance additionally requires the synthetic WAV and semantic checks
+in [_bmad-output/specs/spec-whisper-vulkan-softmax/verification.md](../_bmad-output/specs/spec-whisper-vulkan-softmax/verification.md):
+import, retranscription, final saved live text, provider switching, and CPU /
+Parakeet smoke. Confirm the Vulkan backend and ordinary FP16 in native logs.
+A browser dev server or a successful CPU build cannot establish those results.
+
 Install the committed frontend dependencies before building:
 
 ```bash
@@ -316,10 +363,10 @@ The application will be built with Metal GPU acceleration automatically.
 ### 1. Install Dependencies
 
 - **Node.js:** Download and install from [nodejs.org](https://nodejs.org/).
-- **Rust:** Install from [rust-lang.org](https://www.rust-lang.org/tools/install).
+- **Rust:** Install 1.88.0 or newer from [rust-lang.org](https://www.rust-lang.org/tools/install).
 - **pnpm:** Install version 9.15.9 with `npm install -g pnpm@9.15.9`.
-- **Visual Studio Build Tools:** Install the "Desktop development with C++" workload from the Visual Studio Installer.
-- **CMake:** Download and install from [cmake.org](https://cmake.org/download/).
+- **Visual Studio 2022 Build Tools:** Install the "Desktop development with C++" workload from the Visual Studio Installer.
+- **CMake:** Install 3.19 or newer (3.21+ for the regression runner) from [cmake.org](https://cmake.org/download/).
 
 ### 2. Build and Run
 

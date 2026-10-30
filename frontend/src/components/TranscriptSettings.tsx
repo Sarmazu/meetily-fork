@@ -7,6 +7,7 @@ import { Label } from './ui/label';
 import { Eye, EyeOff, Lock, Unlock } from 'lucide-react';
 import { ModelManager } from './WhisperModelManager';
 import { ParakeetModelManager } from './ParakeetModelManager';
+import { GigaAMModelManager } from './GigaAMModelManager';
 
 
 export interface TranscriptModelProps {
@@ -172,6 +173,8 @@ export function TranscriptSettings({ transcriptModelConfig, setTranscriptModelCo
                         </div>
                     )}
 
+
+                    <GigaAMModelManager />
 
                     {requiresApiKey && (
                         <div>

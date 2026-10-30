@@ -155,9 +155,7 @@ struct ActiveDownloadState {
     revision: u64,
 }
 
-#[derive(Debug, thiserror::Error)]
-#[error("Download cancelled by user")]
-pub(crate) struct DownloadCancelled;
+use crate::model_support::DownloadCancelled;
 
 pub(crate) fn is_download_cancelled(error: &anyhow::Error) -> bool {
     error.downcast_ref::<DownloadCancelled>().is_some()
@@ -853,7 +851,7 @@ impl ParakeetEngine {
         base_url: &str,
         artifacts: &[ArtifactSpec],
         active_download: &ActiveDownload,
-        progress_callback: Option<Box<dyn Fn(DownloadProgress) + Send>>,
+        mut progress_callback: Option<Box<dyn Fn(DownloadProgress) + Send>>,
     ) -> Result<(DownloadProgress, Option<Box<dyn Fn(DownloadProgress) + Send>>)> {
         if active_download.cancellation.is_cancelled() {
             return Err(DownloadCancelled.into());
@@ -900,7 +898,7 @@ impl ParakeetEngine {
                     .checked_add(artifact.exact_bytes)
                     .ok_or_else(|| anyhow!("Progress overflow while skipping {}", artifact.filename))?;
                 let progress = Self::in_flight_progress(confirmed_bytes, total_bytes, 0.0);
-                if let Some(callback) = &progress_callback {
+                if let Some(callback) = progress_callback.as_mut() {
                     callback(progress.clone());
                 }
                 self.set_downloading_status(model_name, progress.percent).await;
@@ -925,7 +923,7 @@ impl ParakeetEngine {
                             .ok_or_else(|| anyhow!("Progress overflow while resuming {}", artifact.filename))?;
                         let progress =
                             Self::in_flight_progress(confirmed_bytes, total_bytes, 0.0);
-                        if let Some(callback) = &progress_callback {
+                        if let Some(callback) = progress_callback.as_mut() {
                             callback(progress.clone());
                         }
                         self.set_downloading_status(model_name, progress.percent).await;
@@ -991,69 +989,16 @@ impl ParakeetEngine {
                     .map_err(|error| anyhow!("Failed to replace {}: {}", artifact.filename, error))?
             };
             let mut writer = BufWriter::with_capacity(8 * 1024 * 1024, file);
-            use futures_util::StreamExt;
-            let mut stream = response.bytes_stream();
-
-            loop {
-                let next_chunk = tokio::select! {
-                    biased;
-                    _ = active_download.cancellation.cancelled() => {
-                        writer.flush().await.map_err(|error| {
-                            anyhow!("Failed to preserve {} during cancellation: {}", artifact.filename, error)
-                        })?;
-                        return Err(DownloadCancelled.into());
-                    }
-                    chunk = timeout(Duration::from_secs(30), stream.next()) => chunk,
-                };
-                let chunk = match next_chunk {
-                    Err(_) => {
-                        writer.flush().await.map_err(|error| {
-                            anyhow!("Failed to preserve {} after timeout: {}", artifact.filename, error)
-                        })?;
-                        return Err(anyhow!(
-                            "Download timeout for {}: no data received for 30 seconds",
-                            artifact.filename
-                        ));
-                    }
-                    Ok(None) => break,
-                    Ok(Some(Err(error))) => {
-                        writer.flush().await.map_err(|flush_error| {
-                            anyhow!(
-                                "Failed to preserve {} after stream error: {}",
-                                artifact.filename,
-                                flush_error
-                            )
-                        })?;
-                        return Err(anyhow!("Download stream failed for {}: {}", artifact.filename, error));
-                    }
-                    Ok(Some(Ok(chunk))) => chunk,
-                };
-
-                let chunk_bytes = chunk.len() as u64;
-                let next_artifact_bytes = artifact_bytes
-                    .checked_add(chunk_bytes)
-                    .ok_or_else(|| anyhow!("{} size overflow", artifact.filename))?;
-                if next_artifact_bytes > artifact.exact_bytes {
-                    writer.flush().await.map_err(|error| {
-                        anyhow!("Failed to preserve {} after overlong response: {}", artifact.filename, error)
-                    })?;
-                    return Err(anyhow!(
-                        "{} response exceeds its exact {} byte size",
-                        artifact.filename,
-                        artifact.exact_bytes
-                    ));
-                }
-                let next_confirmed_bytes = confirmed_bytes
-                    .checked_add(chunk_bytes)
-                    .ok_or_else(|| anyhow!("Progress overflow while downloading {}", artifact.filename))?;
-                if next_confirmed_bytes > total_bytes {
-                    return Err(anyhow!("Download progress exceeds the catalog total"));
-                }
-
-                writer
-                    .write_all(&chunk)
-                    .await
-                    .map_err(|error| anyhow!("Failed to write {}: {}", artifact.filename, error))?;
+            crate::model_support::copy_stream(
+                response.bytes_stream(), &mut writer, artifact_bytes, artifact.exact_bytes,
+                &active_download.cancellation, Some(Duration::from_secs(30)),
+                |chunk_bytes, next_artifact_bytes| {
+                    let next_confirmed_bytes = confirmed_bytes.checked_add(chunk_bytes)
+                        .filter(|n| *n <= total_bytes)
+                        .ok_or_else(|| anyhow!("Download progress exceeds catalog total"));
+                    let mut report = None;
+                    let update = (|| -> Result<()> {
+                        let next_confirmed_bytes = next_confirmed_bytes?;
                 artifact_bytes = next_artifact_bytes;
                 confirmed_bytes = next_confirmed_bytes;
                 streamed_bytes = streamed_bytes
@@ -1074,19 +1019,29 @@ impl ParakeetEngine {
                     } else {
                         0.0
                     };
-                    if let Some(callback) = &progress_callback {
+                    if let Some(callback) = progress_callback.as_mut() {
                         callback(Self::in_flight_progress(
                             confirmed_bytes,
                             total_bytes,
                             speed_mbps,
                         ));
                     }
-                    self.set_downloading_status(model_name, progress.percent).await;
+                    report = Some(progress.percent);
                     last_percent = progress.percent;
                     last_report = Instant::now();
                     bytes_since_report = 0;
                 }
-            }
+                        Ok(())
+                    })();
+                    async move {
+                        update?;
+                        if let Some(percent) = report {
+                            self.set_downloading_status(model_name, percent).await;
+                        }
+                        Ok(())
+                    }
+                },
+            ).await?;
 
             writer
                 .flush()

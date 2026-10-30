@@ -1,0 +1,6 @@
+# Only this synthetic fixture and sanitized diagnostic logs are shareable.
+!synthetic-en.wav
+!win-vulkan-baseline.stdout.log
+!win-vulkan-baseline.stderr.log
+!win-vulkan-fixed.stdout.log
+!win-vulkan-fixed.stderr.log

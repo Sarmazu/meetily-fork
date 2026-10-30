@@ -1,0 +1,436 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "models": {
+      "repository": "https://huggingface.co/istupakov/gigaam-v3-onnx",
+      "revision": "322c3b29492673eb7d0b434bfa9dfb8653e34d02",
+      "license": "MIT",
+      "license_path": "models/LICENSE.txt"
+    },
+    "reference": {
+      "repository": "https://github.com/istupakov/onnx-asr",
+      "revision": "a2fd7530c01a78727422e592bc67ab98d96a9697",
+      "license": "MIT",
+      "license_path": "source/LICENSE"
+    }
+  },
+  "runtime": {
+    "onnxruntime": "1.22.0",
+    "provider": "CPUExecutionProvider",
+    "python": "3.11.9"
+  },
+  "models": {
+    "v3_ctc": {
+      "precision": "FP32",
+      "license": "MIT",
+      "roles": {
+        "config": "models/config.json",
+        "vocab": "models/v3_vocab.txt",
+        "license": "models/LICENSE.txt",
+        "export_config": "models/v3_ctc.yaml",
+        "model": "models/v3_ctc.onnx"
+      },
+      "files": [
+        "models/config.json",
+        "models/v3_vocab.txt",
+        "models/LICENSE.txt",
+        "models/v3_ctc.yaml",
+        "models/v3_ctc.onnx"
+      ]
+    },
+    "v3_rnnt": {
+      "precision": "FP32",
+      "license": "MIT",
+      "roles": {
+        "config": "models/config.json",
+        "vocab": "models/v3_vocab.txt",
+        "license": "models/LICENSE.txt",
+        "export_config": "models/v3_rnnt.yaml",
+        "encoder": "models/v3_rnnt_encoder.onnx",
+        "decoder": "models/v3_rnnt_decoder.onnx",
+        "joint": "models/v3_rnnt_joint.onnx"
+      },
+      "files": [
+        "models/config.json",
+        "models/v3_vocab.txt",
+        "models/LICENSE.txt",
+        "models/v3_rnnt.yaml",
+        "models/v3_rnnt_encoder.onnx",
+        "models/v3_rnnt_decoder.onnx",
+        "models/v3_rnnt_joint.onnx"
+      ]
+    },
+    "v3_e2e_ctc": {
+      "precision": "FP32",
+      "license": "MIT",
+      "roles": {
+        "config": "models/config.json",
+        "vocab": "models/v3_e2e_ctc_vocab.txt",
+        "license": "models/LICENSE.txt",
+        "export_config": "models/v3_e2e_ctc.yaml",
+        "model": "models/v3_e2e_ctc.onnx"
+      },
+      "files": [
+        "models/config.json",
+        "models/v3_e2e_ctc_vocab.txt",
+        "models/LICENSE.txt",
+        "models/v3_e2e_ctc.yaml",
+        "models/v3_e2e_ctc.onnx"
+      ]
+    },
+    "v3_e2e_rnnt": {
+      "precision": "FP32",
+      "license": "MIT",
+      "roles": {
+        "config": "models/config.json",
+        "vocab": "models/v3_e2e_rnnt_vocab.txt",
+        "license": "models/LICENSE.txt",
+        "export_config": "models/v3_e2e_rnnt.yaml",
+        "encoder": "models/v3_e2e_rnnt_encoder.onnx",
+        "decoder": "models/v3_e2e_rnnt_decoder.onnx",
+        "joint": "models/v3_e2e_rnnt_joint.onnx"
+      },
+      "files": [
+        "models/config.json",
+        "models/v3_e2e_rnnt_vocab.txt",
+        "models/LICENSE.txt",
+        "models/v3_e2e_rnnt.yaml",
+        "models/v3_e2e_rnnt_encoder.onnx",
+        "models/v3_e2e_rnnt_decoder.onnx",
+        "models/v3_e2e_rnnt_joint.onnx"
+      ]
+    }
+  },
+  "files": [
+    {
+      "path": "source/LICENSE",
+      "size": 1070,
+      "sha256": "9313d2b456239c74d90ae38dc665168ccdd01ca74bef93a79e7ee2e5c579b3b6",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/LICENSE"
+    },
+    {
+      "path": "source/hatch_build.py",
+      "size": 1168,
+      "sha256": "09019f442f2a47c6331efd10034a76170f16e0c9a84f714637d1893ab3ffa71d",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/hatch_build.py"
+    },
+    {
+      "path": "source/preprocessors/__init__.py",
+      "size": 32,
+      "sha256": "a953f8bc0ed01e19c906831881e4611d0bfba2492c1e5ce66f74669dc6422dda",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/preprocessors/__init__.py"
+    },
+    {
+      "path": "source/preprocessors/build.py",
+      "size": 3167,
+      "sha256": "c28087e25a5fa2984e61c60619486ee27e2265d32ea4d10d83b77cb00155971b",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/preprocessors/build.py"
+    },
+    {
+      "path": "source/preprocessors/fbanks.py",
+      "size": 1826,
+      "sha256": "d3bda8a7b7813f2f279e6e901e1d9e832600badaa22e2b7fd9298104a07223af",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/preprocessors/fbanks.py"
+    },
+    {
+      "path": "source/preprocessors/gigaam.py",
+      "size": 4153,
+      "sha256": "de170cb2d2066f9ebe803ecb0cbf48a14ca6442b5e205a58bab0334861dce2c6",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/preprocessors/gigaam.py"
+    },
+    {
+      "path": "source/preprocessors/kaldi.py",
+      "size": 7499,
+      "sha256": "7f8a979485eb25bf052d469d13a20d3708c69d3f4c6b8cafa89ce49d74359cf0",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/preprocessors/kaldi.py"
+    },
+    {
+      "path": "source/preprocessors/nemo.py",
+      "size": 5363,
+      "sha256": "36651d3953f560af238b228067c6a3d8370330db6a7636dae2e3434959e917ae",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/preprocessors/nemo.py"
+    },
+    {
+      "path": "source/preprocessors/resample.py",
+      "size": 2253,
+      "sha256": "afc10f3b1572b576904af50d9a1b4b4f3b200be601bca4874c20cde3bd900ca3",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/preprocessors/resample.py"
+    },
+    {
+      "path": "source/preprocessors/stft.py",
+      "size": 2196,
+      "sha256": "b84604d6ad6ba8ee8339fba9b4fa278e9fc857d96a3cbc8f5cb0a558514b5241",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/preprocessors/stft.py"
+    },
+    {
+      "path": "source/preprocessors/whisper.py",
+      "size": 4745,
+      "sha256": "b98771bd8e412a048b748a5d4dfe19fd37c1aa8869a3ef114c06b34fb62a35f9",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/preprocessors/whisper.py"
+    },
+    {
+      "path": "source/pyproject.toml",
+      "size": 4678,
+      "sha256": "151d58ff9306e5b7a6fda1eb60bb9959f316609467dda2ef5ad527b2325bc837",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/pyproject.toml"
+    },
+    {
+      "path": "source/src/onnx_asr/__init__.py",
+      "size": 255,
+      "sha256": "9af0ebdf708c69e2a9dc2fea76f71276fa4e9ebe428678a58985167f155fae8b",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/__init__.py"
+    },
+    {
+      "path": "source/src/onnx_asr/adapters.py",
+      "size": 9040,
+      "sha256": "36adf2e7346f0a48424b71e359a2a96841e38be2d789f90dadd4b3deab801d5b",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/adapters.py"
+    },
+    {
+      "path": "source/src/onnx_asr/asr.py",
+      "size": 8272,
+      "sha256": "90d79832a9f5073270e604dc19308a56927cecabcf29815de97825e19187a862",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/asr.py"
+    },
+    {
+      "path": "source/src/onnx_asr/cli.py",
+      "size": 1974,
+      "sha256": "85759b7750524c64a7c66a90d575594dc75436ee998c4b796880aa0c28336333",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/cli.py"
+    },
+    {
+      "path": "source/src/onnx_asr/loader.py",
+      "size": 18065,
+      "sha256": "a565594c17b89580167469ce8ca737665b605119f91897447bd4fd5a4c0c8561",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/loader.py"
+    },
+    {
+      "path": "source/src/onnx_asr/models/__init__.py",
+      "size": 41,
+      "sha256": "d140e50fe66c11415c419c18c95d6e8d1d3dfe4f5e32c2c7d38b1e489cadd47c",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/models/__init__.py"
+    },
+    {
+      "path": "source/src/onnx_asr/models/gigaam.py",
+      "size": 6637,
+      "sha256": "15879d724aab4fc71bd65bd14a38a5070ddc5788160a7a628d0766d53f51ba33",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/models/gigaam.py"
+    },
+    {
+      "path": "source/src/onnx_asr/models/kaldi.py",
+      "size": 3433,
+      "sha256": "e48155d8e197c9ef5fb7c7d52418718ffb8da667b8184ddd28862d49fe08f24c",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/models/kaldi.py"
+    },
+    {
+      "path": "source/src/onnx_asr/models/nemo.py",
+      "size": 11002,
+      "sha256": "646fac0da96b4fea153113a5536202182816269478ad5f3d6dab854b50bb0a69",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/models/nemo.py"
+    },
+    {
+      "path": "source/src/onnx_asr/models/pyannote.py",
+      "size": 9369,
+      "sha256": "a54a2391ec83aa62a71b0dae600626115ac054d8f7367cfb11d6b275ac7f6569",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/models/pyannote.py"
+    },
+    {
+      "path": "source/src/onnx_asr/models/silero.py",
+      "size": 4045,
+      "sha256": "4c795298c59367488ff6bd88323a90cfca537f824c8b7ff47eb2266027d868a9",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/models/silero.py"
+    },
+    {
+      "path": "source/src/onnx_asr/models/tone.py",
+      "size": 3313,
+      "sha256": "1a6f682626a5899109eceeef7c5a3e966b5934a047fb0c9f3bd0ad195665696e",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/models/tone.py"
+    },
+    {
+      "path": "source/src/onnx_asr/models/wav2vec2.py",
+      "size": 1838,
+      "sha256": "555140b9fdcb8165b83d1cc9afe9551435ebe2ed85b168e8c512d0d37d4aad9e",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/models/wav2vec2.py"
+    },
+    {
+      "path": "source/src/onnx_asr/models/wespeaker.py",
+      "size": 1709,
+      "sha256": "fdd697d1357986d29794a653311541f57ce4f0dd00870b095d0381842c1814df",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/models/wespeaker.py"
+    },
+    {
+      "path": "source/src/onnx_asr/models/whisper.py",
+      "size": 9229,
+      "sha256": "cd51aac50037065c6187f669ac8c03d46e3d606d8de4adb33d72dad23aca3fdb",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/models/whisper.py"
+    },
+    {
+      "path": "source/src/onnx_asr/onnx.py",
+      "size": 5174,
+      "sha256": "a4c686f9caf2a680a1bb2c3f941fa99bf734d09751e0c0fe611f32ecdc5fb790",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/onnx.py"
+    },
+    {
+      "path": "source/src/onnx_asr/preprocessors/__init__.py",
+      "size": 40,
+      "sha256": "bba6cfc6052d77d782f3c2f57ef7762c11cd98a2bdb3387524ae7faf571f2cde",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/preprocessors/__init__.py"
+    },
+    {
+      "path": "source/src/onnx_asr/preprocessors/numpy_preprocessor.py",
+      "size": 8985,
+      "sha256": "215b10e9549843feb5961f9a5c03bfa79270b5c08f7bfdd34388bce3f6f0a83f",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/preprocessors/numpy_preprocessor.py"
+    },
+    {
+      "path": "source/src/onnx_asr/preprocessors/preprocessor.py",
+      "size": 3232,
+      "sha256": "cde18fdcb0a38e44ec3bc1d7b7dc1039294d27e985adf285821d062daef21f6f",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/preprocessors/preprocessor.py"
+    },
+    {
+      "path": "source/src/onnx_asr/preprocessors/resampler.py",
+      "size": 2295,
+      "sha256": "ca59d0528d229628fef721e157849187d3f1cc2f04a69242b7395a2241dc6e23",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/preprocessors/resampler.py"
+    },
+    {
+      "path": "source/src/onnx_asr/py.typed",
+      "size": 41,
+      "sha256": "444d0f5ec8932d531342dd21a6f72ef59d989d1241303f1280091ca26b4b021a",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/py.typed"
+    },
+    {
+      "path": "source/src/onnx_asr/resolver.py",
+      "size": 8864,
+      "sha256": "340047c6a37ccd3db0df8e5f3b91e012693a0cf56b8c7dbd04bee887d1087b85",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/resolver.py"
+    },
+    {
+      "path": "source/src/onnx_asr/se.py",
+      "size": 486,
+      "sha256": "5a7533f8ecc39e79afe1968e14a757ee062e5bb5332d788e97714d3d5d3ddef8",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/se.py"
+    },
+    {
+      "path": "source/src/onnx_asr/utils.py",
+      "size": 6966,
+      "sha256": "336943996cfa18c7d1f1e5e4948bfe427c2e49fc7a46e5259974183084a2ee4e",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/utils.py"
+    },
+    {
+      "path": "source/src/onnx_asr/vad.py",
+      "size": 4216,
+      "sha256": "371627953da997dbc7929cb826c8d5a1724e811d67f8dbb6aa4e6741b2297ad4",
+      "url": "https://raw.githubusercontent.com/istupakov/onnx-asr/a2fd7530c01a78727422e592bc67ab98d96a9697/src/onnx_asr/vad.py"
+    },
+    {
+      "path": "models/LICENSE.txt",
+      "size": 1070,
+      "sha256": "f00de6715714c7a63d08639cdbfaa40224eefc407302614bd19f1a8b98c875aa",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/LICENSE.txt"
+    },
+    {
+      "path": "models/README.md",
+      "size": 1501,
+      "sha256": "5fe26483daa57aaccaa0b59981c0787951df3fc90444f26c7c454dc4342f9f57",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/README.md"
+    },
+    {
+      "path": "models/config.json",
+      "size": 135,
+      "sha256": "0641fcf73f4af791c73f05083e38a658ff5dcbee3534a0c61396c10f4b97f0fe",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/config.json"
+    },
+    {
+      "path": "models/v3_ctc.onnx",
+      "size": 885264128,
+      "sha256": "1fb978d4f41e1334003fae9d29f2d9844d4132315a90553a4b986839051ba9d3",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_ctc.onnx"
+    },
+    {
+      "path": "models/v3_ctc.yaml",
+      "size": 1007,
+      "sha256": "37790b3abd82bcd090db277b2ec79489a20fdabfc3d205463f0c4ad17022fbf0",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_ctc.yaml"
+    },
+    {
+      "path": "models/v3_e2e_ctc.onnx",
+      "size": 885950079,
+      "sha256": "377701bd33568f4733feec2db5b2dc12544fd09a5a5dfa69ccf55d161f84027a",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_e2e_ctc.onnx"
+    },
+    {
+      "path": "models/v3_e2e_ctc.yaml",
+      "size": 899,
+      "sha256": "e67eca3a311ad7c8813d36dff6b8eeba7ad3459fd811d6faea2a26535754a358",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_e2e_ctc.yaml"
+    },
+    {
+      "path": "models/v3_e2e_ctc_vocab.txt",
+      "size": 2007,
+      "sha256": "142de7570b3de5b3035ce111a89c228e80e6085273731d944093ddf24fa539cd",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_e2e_ctc_vocab.txt"
+    },
+    {
+      "path": "models/v3_e2e_rnnt.yaml",
+      "size": 1041,
+      "sha256": "d23270a1f327e365ebc4554b7ceee69ac12898e21092c18085151516aa58f91b",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_e2e_rnnt.yaml"
+    },
+    {
+      "path": "models/v3_e2e_rnnt_decoder.onnx",
+      "size": 4599910,
+      "sha256": "7b0a16d67fd2cb37061decc93c69e364a9ab27afee3c57495d55b1c974cf7231",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_e2e_rnnt_decoder.onnx"
+    },
+    {
+      "path": "models/v3_e2e_rnnt_encoder.onnx",
+      "size": 885084534,
+      "sha256": "cd60b3764a832e8560ae6d3ad0b10adc1a42ffae412b9476f25620aae4f4a508",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_e2e_rnnt_encoder.onnx"
+    },
+    {
+      "path": "models/v3_e2e_rnnt_joint.onnx",
+      "size": 2712896,
+      "sha256": "602ff7017a93311aad34df1437c8d7f49911353c13d6eae7a6ee7b041339465c",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_e2e_rnnt_joint.onnx"
+    },
+    {
+      "path": "models/v3_e2e_rnnt_vocab.txt",
+      "size": 13354,
+      "sha256": "39abae20e692998290c574e606f11a9edef2902a1995463fcff63d1490cf22b7",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_e2e_rnnt_vocab.txt"
+    },
+    {
+      "path": "models/v3_rnnt.yaml",
+      "size": 1145,
+      "sha256": "8efdaad605803a38dc9cfcfb9a898b19ca749b04fe1390141205882f4b3d75aa",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_rnnt.yaml"
+    },
+    {
+      "path": "models/v3_rnnt_decoder.onnx",
+      "size": 3331429,
+      "sha256": "443c3b7bd42b453611618135d6b1e7d9467e5dd97c8a68501da4aa355750c0da",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_rnnt_decoder.onnx"
+    },
+    {
+      "path": "models/v3_rnnt_encoder.onnx",
+      "size": 885084534,
+      "sha256": "7ae7509c3f1128369564df0b00e2ee4950adf539de2392ac5c800a5bc04c7132",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_rnnt_encoder.onnx"
+    },
+    {
+      "path": "models/v3_rnnt_joint.onnx",
+      "size": 1440448,
+      "sha256": "fd1d02f45c2ad3d6b67cc149811ad794ab4b020ed49a0a9e2790a8619d1cddd8",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_rnnt_joint.onnx"
+    },
+    {
+      "path": "models/v3_vocab.txt",
+      "size": 198,
+      "sha256": "a9143c30844d3c0bee3e9e927e4084774eb1b9eeaafc473b2c4521e4911a7c07",
+      "url": "https://huggingface.co/istupakov/gigaam-v3-onnx/resolve/322c3b29492673eb7d0b434bfa9dfb8653e34d02/v3_vocab.txt"
+    }
+  ]
+}

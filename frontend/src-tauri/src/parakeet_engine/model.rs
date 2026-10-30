@@ -1,11 +1,9 @@
 use ndarray::{Array, Array1, Array2, Array3, ArrayD, ArrayViewD, IxDyn};
-use once_cell::sync::Lazy;
 use ort::execution_providers::CPUExecutionProvider;
 use ort::inputs;
 use ort::session::builder::GraphOptimizationLevel;
 use ort::session::Session;
 use ort::value::TensorRef;
-use regex::Regex;
 
 use std::fs;
 use std::path::Path;
@@ -16,9 +14,6 @@ const SUBSAMPLING_FACTOR: usize = 8;
 const WINDOW_SIZE: f32 = 0.01;
 const MAX_TOKENS_PER_STEP: usize = 3;
 const TDT_DURATIONS: [usize; 5] = [0, 1, 2, 3, 4];
-
-static DECODE_SPACE_RE: Lazy<Result<Regex, regex::Error>> =
-    Lazy::new(|| Regex::new(r"\A\s|\s\B|(\s)\b"));
 
 #[derive(Debug, Clone)]
 pub struct TimestampedResult {
@@ -437,30 +432,23 @@ impl ParakeetModel {
     }
 
     fn decode_tokens(&self, ids: Vec<i32>, timestamps: Vec<usize>) -> TimestampedResult {
+        Self::decode_tokens_with_vocab(&self.vocab, ids, timestamps)
+    }
+
+    fn decode_tokens_with_vocab(vocab: &[String], ids: Vec<i32>, timestamps: Vec<usize>) -> TimestampedResult {
         let tokens: Vec<String> = ids
             .iter()
             .filter_map(|&id| {
                 let idx = id as usize;
-                if idx < self.vocab.len() {
-                    Some(self.vocab[idx].clone())
+                if idx < vocab.len() {
+                    Some(vocab[idx].clone())
                 } else {
                     None
                 }
             })
             .collect();
 
-        let text = match &*DECODE_SPACE_RE {
-            Ok(regex) => regex
-                .replace_all(&tokens.join(""), |caps: &regex::Captures| {
-                    if caps.get(1).is_some() {
-                        " "
-                    } else {
-                        ""
-                    }
-                })
-                .to_string(),
-            Err(_) => tokens.join(""), // Fallback if regex failed to compile
-        };
+        let text = crate::model_support::cleanup_decode_text(&tokens.join(""));
 
         let float_timestamps: Vec<f32> = timestamps
             .iter()
@@ -499,5 +487,21 @@ impl ParakeetModel {
         })?;
 
         Ok(timestamped_result)
+    }
+}
+
+#[cfg(test)]
+mod decode_tests {
+    use super::*;
+    #[test]
+    fn cleanup_preserves_case_punctuation_tokens_and_timestamps() {
+        let vocab = vec![" Привет".into(), " ,".into(), " мир".into(), "!".into()];
+        let result = ParakeetModel::decode_tokens_with_vocab(&vocab, vec![0,1,2,3,99], vec![0,2,3,4]);
+        assert_eq!(result.text, "Привет, мир!");
+        assert_eq!(result.tokens, vocab);
+        assert_eq!(result.timestamps.len(), 4);
+        for (actual, expected) in result.timestamps.iter().zip([0., 0.16, 0.24, 0.32]) {
+            assert!((*actual - expected).abs() < 1e-6);
+        }
     }
 }

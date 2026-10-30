@@ -49,6 +49,8 @@ pub mod anthropic;
 pub mod groq;
 pub mod openrouter;
 pub mod parakeet_engine;
+pub mod gigaam_engine;
+mod model_support;
 pub mod state;
 pub mod summary;
 pub mod tray;
@@ -473,6 +475,7 @@ pub fn run() {
             None::<notifications::manager::NotificationManager<tauri::Wry>>,
         )) as NotificationManagerState<tauri::Wry>)
         .manage(audio::init_system_audio_state())
+        .manage(gigaam_engine::commands::GigaAMState::default())
         .manage(summary::summary_engine::ModelManagerState(Arc::new(tokio::sync::Mutex::new(None))))
         .setup(|_app| {
             #[cfg(target_os = "windows")]
@@ -654,6 +657,9 @@ pub fn run() {
             whisper_engine::commands::whisper_cancel_download,
             whisper_engine::commands::whisper_delete_corrupted_model,
             // Parakeet engine commands
+            gigaam_engine::commands::gigaam_get_available_models,
+            gigaam_engine::commands::gigaam_download_model,
+            gigaam_engine::commands::gigaam_cancel_download,
             parakeet_engine::commands::parakeet_init,
             parakeet_engine::commands::parakeet_get_available_models,
             parakeet_engine::commands::parakeet_load_model,

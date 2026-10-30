@@ -77,3 +77,8 @@ experiments/
 target/
 
 frontend/src-tauri/binaries/
+
+# BMAD personal settings and Python runtime caches
+/_bmad/config.user.toml
+/_bmad/**/__pycache__/
+/.agents/skills/**/__pycache__/
