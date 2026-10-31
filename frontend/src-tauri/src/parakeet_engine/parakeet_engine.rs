@@ -1,5 +1,5 @@
 use crate::parakeet_engine::model::ParakeetModel;
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -1041,7 +1041,7 @@ impl ParakeetEngine {
                         Ok(())
                     }
                 },
-            ).await?;
+            ).await.with_context(|| format!("Failed to download {}", artifact.filename))?;
 
             writer
                 .flush()

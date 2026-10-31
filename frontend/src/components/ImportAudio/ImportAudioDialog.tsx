@@ -1,3 +1,5 @@
+import { GigaAMAPI } from '@/lib/gigaam';
+import { checkGigaAMModelReady } from '@/lib/transcription-model-readiness';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Upload,
@@ -86,6 +88,7 @@ export function ImportAudioDialog({
 
   // Use centralized model fetching hook
   const {
+    modelsError,
     availableModels,
     selectedModelKey,
     setSelectedModelKey,
@@ -184,8 +187,15 @@ export function ImportAudioDialog({
     }
   };
 
+  useEffect(() => { if (modelsError) toast.error(modelsError); }, [modelsError]);
+
   const handleStartImport = async () => {
     if (!fileInfo) return;
+    if (selectedModelKey.startsWith('gigaam:') && !selectedModel) { toast.error('Select an available transcription model.'); return; }
+    if (selectedModel?.provider === 'gigaam') {
+      try { await checkGigaAMModelReady(selectedModel.name, selectedLang, GigaAMAPI.list); }
+      catch (error) { toast.error(String(error)); return; }
+    }
 
     await startImport(
       fileInfo.path,

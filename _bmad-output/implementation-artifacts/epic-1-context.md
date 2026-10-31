@@ -61,3 +61,11 @@ Dependencies: 1.2 ← 1.1; 1.3 ← 1.1/1.2; 1.4 ← 1.1/1.2/1.3; 1.5 ← 1.1–1
 ## Актуализация CC-2
 
 Следующий bmad-build использует Story 1.5 revision 3: сначала фаза A консолидации stream-to-writer и text cleanup с Parakeet, затем фаза B адаптера. Решения о сохранении компонентов основаны на [аудите 1.1–1.4](../specs/spec-gigaam-cpu/reuse-audit-1-1-to-1-4.md), а не только прежних PASS. Изменение очистки текста требует CTC/RNNT smoke и затронутого Parakeet; download tests обоих managers подтверждают сохранность разных resume/package policies. Предыдущие записи о проверках описывают предыдущую документальную ревизию, не завершение фазы A.
+
+## Текущее исполнение — 2026-10-31
+
+Предыдущие заметки об остановленной 1.5 описывают состояние до реализации. Story 1.5 revision 3 завершена: общий transport/text, adapter/guard, 49 targeted unit tests и native model/provider checks PASS; независимое ревью разобрано, принятые замечания исправлены. Technical spec done, tracker review. Missing session export исправлен на provider. Следующая незавершённая разработка — 1.6; реальные UI/recording/import/retranscription пока не интегрированы. Отчёт — gigaam-sessions-verification.md.
+
+## Текущее исполнение — после 1.6, 2026-10-31
+
+1.5 принята пользователем, tracker done. 1.6 реализована: существующие настройки/менеджер/списки/readiness, сохранение выбора, capability retry и сохранность выбора при unmount. Явный GigaAM в файловых командах отклоняется до side effects, пока маршруты не подключены. 33 Bun tests, TypeScript и 3 native command/guard tests PASS; native mock exe запускался со штатным Tauri Common Controls v6 manifest (отчёт gigaam-selection-verification.md). Реальный restart/native UI не проверен. Spec 1.6 done, tracker review; следующая разработка 1.7. Удалить временные import guards при подключении GigaAM в 1.7, retranscription guards — в 1.8; полный live — 1.9.

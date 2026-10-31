@@ -12,6 +12,8 @@ import {
   hasDownloadingModel,
   type ModelWithStatus,
 } from '@/lib/transcription-model-readiness';
+import { GigaAMAPI } from '@/lib/gigaam';
+import { checkGigaAMModelReady } from '@/lib/transcription-model-readiness';
 import { toast } from 'sonner';
 
 const TRANSCRIPTION_RUNTIME_START_ERROR_CODE = 'TRANSCRIPTION_RUNTIME_INITIALIZATION_FAILED';
@@ -27,6 +29,7 @@ interface UseRecordingStartReturn {
 
 interface TranscriptConfig {
   provider?: string;
+  model?: string;
 }
 
 /**
@@ -53,7 +56,8 @@ export function useRecordingStart(
 
   const { clearTranscripts, setMeetingTitle } = useTranscripts();
   const { setIsMeetingActive } = useSidebar();
-  const { selectedDevices } = useConfig();
+  const { selectedDevices, selectedLanguage } = useConfig();
+  const readinessError = useRef<string | null>(null);
   const { setStatus } = useRecordingState();
 
   // Generate meeting title with timestamp
@@ -81,7 +85,13 @@ export function useRecordingStart(
   // Check the selected local transcription provider, not a hardcoded engine.
   const checkTranscriptionModelReady = useCallback(async (): Promise<boolean> => {
     try {
-      const provider = await getTranscriptionProvider();
+      readinessError.current = null;
+      const config = await invoke<TranscriptConfig | null>('api_get_transcript_config');
+      const provider = config?.provider || 'parakeet';
+      if (provider === 'gigaam') {
+        await checkGigaAMModelReady(config?.model, selectedLanguage, GigaAMAPI.list);
+        return true;
+      }
       const commands = getProviderCommands(provider);
 
       if (commands) {
@@ -92,10 +102,11 @@ export function useRecordingStart(
       console.error(`Unsupported transcription provider: ${provider}`);
       return false;
     } catch (error) {
+      readinessError.current = String(error);
       console.error('Failed to check transcription model status:', error);
       return false;
     }
-  }, [getTranscriptionProvider]);
+  }, [getTranscriptionProvider, selectedLanguage]);
 
   // Check download status for the selected local transcription provider.
   const checkIfModelDownloading = useCallback(async (): Promise<boolean> => {
@@ -137,7 +148,7 @@ export function useRecordingStart(
           Analytics.trackButtonClick('start_recording_blocked_downloading', 'home_page');
         } else {
           toast.error('Transcription model not ready', {
-            description: 'Please download a transcription model before recording.',
+            description: readinessError.current || 'Please download a transcription model before recording.',
             duration: 5000,
           });
           showModal?.('modelSelector', 'Transcription model setup required');
@@ -229,7 +240,7 @@ export function useRecordingStart(
               Analytics.trackButtonClick('start_recording_blocked_downloading', 'sidebar_auto');
             } else {
               toast.error('Transcription model not ready', {
-                description: 'Please download a transcription model before recording.',
+                description: readinessError.current || 'Please download a transcription model before recording.',
                 duration: 5000,
               });
               showModal?.('modelSelector', 'Transcription model setup required');
@@ -328,7 +339,7 @@ export function useRecordingStart(
           Analytics.trackButtonClick('start_recording_blocked_downloading', 'sidebar_direct');
         } else {
           toast.error('Transcription model not ready', {
-            description: 'Please download a transcription model before recording.',
+            description: readinessError.current || 'Please download a transcription model before recording.',
             duration: 5000,
           });
           showModal?.('modelSelector', 'Transcription model setup required');

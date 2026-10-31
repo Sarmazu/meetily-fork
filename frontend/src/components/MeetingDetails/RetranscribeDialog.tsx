@@ -1,3 +1,5 @@
+import { GigaAMAPI } from '@/lib/gigaam';
+import { checkGigaAMModelReady } from '@/lib/transcription-model-readiness';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { RefreshCw, Globe, Loader2, AlertCircle, CheckCircle2, X, Cpu } from 'lucide-react';
 import {
@@ -66,6 +68,7 @@ export function RetranscribeDialog({
 
   // Use centralized model fetching hook
   const {
+    modelsError,
     availableModels,
     selectedModelKey,
     setSelectedModelKey,
@@ -202,6 +205,11 @@ export function RetranscribeDialog({
       return;
     }
 
+    if (selectedModelKey.startsWith('gigaam:') && !selectedModelDetails) { setError('Select an available transcription model.'); return; }
+    if (selectedModelDetails?.provider === 'gigaam') {
+      try { await checkGigaAMModelReady(selectedModelDetails.name, selectedLang, GigaAMAPI.list); }
+      catch (error) { setError(String(error)); return; }
+    }
     setIsProcessing(true);
     setError(null);
     setProgress(null);
@@ -342,6 +350,7 @@ export function RetranscribeDialog({
                 <Cpu className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Model</span>
               </div>
+              {modelsError && <p role="alert">{modelsError}</p>}
               <Select value={selectedModelKey} onValueChange={setSelectedModelKey} disabled={loadingModels}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={loadingModels ? "Loading models..." : "Select model"} />

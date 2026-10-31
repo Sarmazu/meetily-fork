@@ -96,6 +96,7 @@ pub async fn start_retranscription<R: Runtime>(
     model: Option<String>,
     provider: Option<String>,
 ) -> Result<RetranscriptionResult> {
+    super::common::validate_file_transcription_provider(provider.as_deref()).map_err(|e| anyhow!(e))?;
     // Acquire guard - ensures flag is cleared even on panic/early return
     let _guard = RetranscriptionGuard::acquire().map_err(|e| anyhow!(e))?;
 
@@ -786,6 +787,7 @@ pub async fn start_retranscription_command<R: Runtime>(
     model: Option<String>,
     provider: Option<String>,
 ) -> Result<RetranscriptionStarted, String> {
+    super::common::validate_file_transcription_provider(provider.as_deref())?;
 
     // Check if retranscription is already in progress (guard will be acquired in start_retranscription)
     if RETRANSCRIPTION_IN_PROGRESS.load(Ordering::SeqCst) {
@@ -1050,5 +1052,31 @@ mod tests {
         assert_eq!(metadata["summary_language"], "fr");
         assert_eq!(metadata["custom_field"], "preserve me");
         assert!(metadata.get("detected_summary_language").is_none());
+    }
+}
+
+#[cfg(test)]
+mod file_provider_guard_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn gigaam_command_rejects_before_background_operation() {
+        let app = tauri::test::mock_builder()
+            .build(tauri::test::mock_context(tauri::test::noop_assets()))
+            .expect("mock application")
+            .handle().clone();
+        let directory = tempfile::tempdir().unwrap();
+        let missing = directory.path().join("nonexistent-synthetic-input.wav");
+        let path = missing.to_str().unwrap();
+        let active_before = RETRANSCRIPTION_IN_PROGRESS.load(Ordering::SeqCst);
+        let cancelled_before = RETRANSCRIPTION_CANCELLED.load(Ordering::SeqCst);
+        let result = start_retranscription_command(app, "synthetic-meeting".into(), path.into(), Some("ru".into()), Some("v3_ctc".into()), Some("gigaam".into())).await;
+        let error = result.err().expect("GigaAM command must reject synchronously");
+        assert!(error.contains("GigaAM"));
+        assert!(error.contains("not available for this operation yet"));
+        assert_eq!(RETRANSCRIPTION_IN_PROGRESS.load(Ordering::SeqCst), active_before);
+        assert_eq!(RETRANSCRIPTION_CANCELLED.load(Ordering::SeqCst), cancelled_before);
+        assert!(!missing.exists());
+        assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 0);
     }
 }

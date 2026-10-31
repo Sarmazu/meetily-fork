@@ -145,6 +145,10 @@ impl DownloadManager {
     pub(crate) async fn lease(&self, name: &str) -> Result<OwnedRwLockReadGuard<()>, String> {
         Ok(self.gates.get(name).ok_or("Unknown GigaAM model")?.clone().read_owned().await)
     }
+    #[cfg(test)]
+    pub(super) fn publication_available(&self, name: &str) -> bool {
+        self.gates.get(name).expect("known test model").try_write().is_ok()
+    }
     pub(crate) fn package_dir(&self, name: &str) -> Result<PathBuf, String> {
         if !self.gates.contains_key(name) { return Err("Unknown GigaAM model".into()); }
         Ok(self.root.join(name))

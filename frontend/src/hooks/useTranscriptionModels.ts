@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { GigaAMAPI } from '../lib/gigaam';
 import { invoke } from '@tauri-apps/api/core';
 
 export interface RawModelInfo {
@@ -8,7 +9,7 @@ export interface RawModelInfo {
 }
 
 export interface ModelOption {
-  provider: 'whisper' | 'parakeet';
+  provider: 'whisper' | 'parakeet' | 'gigaam';
   name: string;
   displayName: string;
   size_mb: number;
@@ -31,6 +32,7 @@ interface TranscriptModelConfig {
 export function useTranscriptionModels(transcriptModelConfig: TranscriptModelConfig | undefined) {
   const [availableModels, setAvailableModels] = useState<ModelOption[]>([]);
   const [selectedModelKey, setSelectedModelKey] = useState<string>('');
+  const [modelsError, setModelsError] = useState<string | null>(null);
   const [loadingModels, setLoadingModels] = useState(false);
   // Track whether the user has manually changed the model selection
   const userSelectedRef = useRef(false);
@@ -43,6 +45,7 @@ export function useTranscriptionModels(transcriptModelConfig: TranscriptModelCon
 
   const fetchModels = useCallback(async () => {
     setLoadingModels(true);
+    setModelsError(null);
     const allModels: ModelOption[] = [];
 
     // Fetch Whisper models
@@ -77,6 +80,12 @@ export function useTranscriptionModels(transcriptModelConfig: TranscriptModelCon
       console.error('Failed to fetch Parakeet models:', err);
     }
 
+    try {
+      const gigaam = await GigaAMAPI.list();
+      if (gigaam.supported) allModels.push(...gigaam.models.filter(m => m.status === 'Available').map(m => ({
+        provider: 'gigaam' as const, name: m.name, displayName: `GigaAM: ${m.name}`, size_mb: m.size_bytes / 1024 ** 2,
+      })));
+    } catch (error) { setModelsError(`GigaAM models could not be loaded: ${String(error)}`); }
     setAvailableModels(allModels);
 
     // Set default model based on user's saved configuration
@@ -88,6 +97,7 @@ export function useTranscriptionModels(transcriptModelConfig: TranscriptModelCon
     const configuredMatch = allModels.find(
       (m) =>
         (configuredProvider === 'localWhisper' && m.provider === 'whisper' && m.name === configuredModel) ||
+        (configuredProvider === 'gigaam' && m.provider === 'gigaam' && m.name === configuredModel) ||
         (configuredProvider === 'parakeet' && m.provider === 'parakeet' && m.name === configuredModel)
     );
 
@@ -96,6 +106,8 @@ export function useTranscriptionModels(transcriptModelConfig: TranscriptModelCon
       if (configuredMatch) {
         // Use the configured model if available
         setSelectedModelKey(`${configuredMatch.provider}:${configuredMatch.name}`);
+      } else if (configuredProvider === 'gigaam') {
+        setSelectedModelKey(`gigaam:${configuredModel}`);
       } else if (allModels.length > 0) {
         // Fall back to first available model
         setSelectedModelKey(`${allModels[0].provider}:${allModels[0].name}`);
@@ -111,6 +123,7 @@ export function useTranscriptionModels(transcriptModelConfig: TranscriptModelCon
   }, []);
 
   return {
+    modelsError,
     availableModels,
     selectedModelKey,
     setSelectedModelKey: setSelectedModelKeyWithTracking,

@@ -1,9 +1,15 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { GigaAMAPI, GigaAMModels, GigaAMProgress } from '../lib/gigaam';
 
-export function GigaAMModelManager() {
+interface GigaAMModelManagerProps {
+  selectedModel?: string;
+  onModelSelect?: (model: string) => void;
+  autoSave?: boolean;
+}
+export function GigaAMModelManager({ selectedModel, onModelSelect, autoSave = false }: GigaAMModelManagerProps = {}) {
   const [data, setData] = useState<GigaAMModels>({ supported: false, models: [] });
   const [progress, setProgress] = useState<Record<string, GigaAMProgress>>({});
   const [pending, setPending] = useState<Record<string, boolean>>({});
@@ -53,6 +59,21 @@ export function GigaAMModelManager() {
     } catch (e) { if (mounted.current) setError(String(e)); }
     finally { if (mounted.current) setPending(old => ({ ...old, [name]: false })); }
   };
+  const select = async (name: string) => {
+    setPending(old => ({ ...old, [name]: true }));
+    setError(undefined);
+    try {
+      // Recheck the authoritative catalog immediately before saving.
+      const latest = await GigaAMAPI.list();
+      if (!mounted.current) return;
+      if (!latest.supported || !latest.models.some(model => model.name === name && model.status === 'Available')) {
+        throw new Error('GigaAM model is unavailable on this platform or its package is not ready.');
+      }
+      if (autoSave) await invoke('api_save_transcript_config', { provider: 'gigaam', model: name, apiKey: null });
+      onModelSelect?.(name);
+    } catch (e) { if (mounted.current) setError(String(e)); }
+    finally { if (mounted.current) setPending(old => ({ ...old, [name]: false })); }
+  };
   return <section className="mt-6 space-y-3" aria-label="GigaAM model downloads">
     <h3 className="font-medium">GigaAM · Russian · FP32 CPU</h3>
     {error && <p role="alert" className="text-red-600">{error}</p>}
@@ -64,6 +85,7 @@ export function GigaAMModelManager() {
         <p>{downloading ? 'Downloading' : model.status}</p>
         {downloading && <progress aria-label={`${model.name} download progress`} max={100} value={event?.progress ?? 0} />}
         {(model.error || event?.error) && <p role="alert" className="text-red-600">{model.error || event?.error}</p>}
+        {model.status === 'Available' && onModelSelect && <button type="button" disabled={Object.values(pending).some(Boolean) || downloading} aria-pressed={selectedModel === model.name} onClick={() => void select(model.name)}>{selectedModel === model.name ? 'Selected' : 'Select model'}</button>}
         {model.status !== 'Available' && <button type="button" disabled={pending[model.name]} className="rounded border px-3 py-1 disabled:opacity-50" onClick={() => void act(model.name, downloading)}>
           {pending[model.name] ? 'Please wait…' : downloading ? 'Cancel download' : model.status === 'Missing' ? 'Download' : 'Retry download'}
         </button>}

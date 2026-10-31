@@ -234,3 +234,25 @@ mod tests {
         waiter.await.unwrap();
     }
 }
+
+/// Temporary explicit boundary until the GigaAM file routes are integrated.
+/// Call before acquiring operation flags, spawning tasks, or touching files.
+pub(crate) fn validate_file_transcription_provider(provider: Option<&str>) -> Result<(), String> {
+    if provider == Some("gigaam") {
+        return Err("GigaAM file transcription is not available for this operation yet. Select another provider.".into());
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod file_provider_guard_tests {
+    use super::validate_file_transcription_provider;
+
+    #[test]
+    fn gigaam_file_route_rejects_without_side_effects() {
+        assert!(validate_file_transcription_provider(Some("gigaam")).unwrap_err().contains("not available for this operation yet"));
+        for provider in [None, Some("whisper"), Some("localWhisper"), Some("parakeet")] {
+            assert!(validate_file_transcription_provider(provider).is_ok());
+        }
+    }
+}

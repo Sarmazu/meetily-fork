@@ -4,7 +4,7 @@ type: feature
 created: 2026-10-30
 updated: 2026-10-30
 revision: 3
-status: in-progress
+status: done
 route: dispatch
 baseline_commit: a2cb62e827da7ef59f65064c97233efb2313878e
 review_loop_iteration: 0
@@ -61,14 +61,16 @@ context:
 
 Shared code map (revision 3 implementation): `frontend/src-tauri/src/model_support.rs::copy_stream` принимает готовый stream/writer, initial/exact size, token, optional idle timeout и async callback приращений; проверяет предел, flush при отмене/ошибке и точный итог. `model_support.rs::cleanup_decode_text` хранит исходный статический regex/replacement. URL/resume, progress/terminal IPC и publication остаются у прежних потребителей.
 
+Фактические общие функции: frontend/src-tauri/src/model_support.rs::copy_stream и cleanup_decode_text, подключены в Parakeet и GigaAM. Адаптер: frontend/src-tauri/src/gigaam_engine/provider.rs; публичный Tauri IPC сохранён.
+
 ## Фаза A — консолидация компонентов 1.2–1.4
 
 Основание: [покомпонентный аудит](../specs/spec-gigaam-cpu/reuse-audit-1-1-to-1-4.md). Выполнить до provider. Это разрешённое исключение из прежней границы «не менять Parakeet»: только выделение двух общих функций с сохранением поведения; общий lifecycle/декодер/настройки Parakeet не менять.
 
-- [ ] Выделить из существующего Parakeet download_artifacts общий перенос готового stream в writer: имеющийся размер/ожидаемый итог, cancellation, callback приращений. Использовать в Parakeet и GigaAM transfer. URL/Range/resume и response checks остаются у Parakeet; staging/create_new/hashes/atomic publication — у GigaAM. Сохранить обоим потребителям точный прогресс/terminal/cancel semantics; не вводить общий manager.
-- [ ] Вынести текущие DECODE_SPACE_RE/replacement из Parakeet в общую чистую функцию со статическим regex; использовать в Parakeet decode_tokens и GigaAM cleanup_text. Не менять trim/case/punctuation/timestamps, vocab parsers, session flags или RNNT loops.
-- [ ] Запустить существующие targeted download tests обоих managers, включая Range ignored/416/resume и GigaAM cancellation/hash/publication/rollback; текстовые fixtures обоих путей. После изменения cleanup повторить model-backed CTC/RNNT smoke на готовых пакетах и затронутый Parakeet. Предыдущий запрет повторного smoke относится только к неизменённым вычислениям.
-- [ ] Записать фактические пути/контракт двух функций в code map до кода, с сохранением существующего публичного IPC. Никакой generic engine framework для их выделения не требуется.
+- [x] Выделить из существующего Parakeet download_artifacts общий перенос готового stream в writer: имеющийся размер/ожидаемый итог, cancellation, callback приращений. Использовать в Parakeet и GigaAM transfer. URL/Range/resume и response checks остаются у Parakeet; staging/create_new/hashes/atomic publication — у GigaAM. Сохранить обоим потребителям точный прогресс/terminal/cancel semantics; не вводить общий manager.
+- [x] Вынести текущие DECODE_SPACE_RE/replacement из Parakeet в общую чистую функцию со статическим regex; использовать в Parakeet decode_tokens и GigaAM cleanup_text. Не менять trim/case/punctuation/timestamps, vocab parsers, session flags или RNNT loops.
+- [x] Запустить существующие targeted download tests обоих managers, включая Range ignored/416/resume и GigaAM cancellation/hash/publication/rollback; текстовые fixtures обоих путей. После изменения cleanup повторить model-backed CTC/RNNT smoke на готовых пакетах и затронутый Parakeet. Предыдущий запрет повторного smoke относится только к неизменённым вычислениям.
+- [x] Записать фактические пути/контракт двух функций в code map до кода, с сохранением существующего публичного IPC. Никакой generic engine framework для их выделения не требуется.
 
 ## Фаза B — адаптер
 
@@ -84,12 +86,12 @@ Shared code map (revision 3 implementation): `frontend/src-tauri/src/model_suppo
 
 ## Tasks & Acceptance
 
-- [ ] Сверить начатый diff 1.5 с сохранённым baseline: downloads/commands/mod уже изменены, session.rs отсутствует. При реализации заменить недействующее объявление session на provider и привести частичные gates к интерфейсу выше. Завершённые 1.1–1.4 сохранить; восстановить компиляцию до расширения scope.
-- [ ] Реализовать provider.rs с capture, простым open, CTC/RNNT dispatch и существующим TranscriptionProvider. Отдельные SessionFactory/менеджеры операций не вводить.
-- [ ] Завершить необходимый guard в текущем DownloadManager, crate-level manager access и module export. Не добавлять Tauri-команды и не менять настройки/маршруты приложения в этой истории.
-- [ ] Addressed tests: допустимые четыре ID/языки и ошибки capture; неизменная идентичность/hint; локальная сериализация; clone/drop и удержание blocking worker после drop awaiter; запрет publication при guard и разрешение после последнего использования. Использовать малые fixtures/локальные callbacks существующего пути, без production mock-engine framework и без отдельной fake recording queue/save.
-- [ ] Выполнить targeted Windows compile/unit checks текущей копии. Не повторять model-backed smoke четырёх неизменённых движков только ради wrapper: реальный путь через provider проверяется в 1.7–1.9. Если изменены вычислительный код/пакет/runtime или найден регресс — повторить соответствующий engine smoke.
-- [ ] Записать gigaam-sessions-verification.md с командами, исходной версией, результатами и ограничениями. Не объявлять запись/импорт/сохранение проверенными тестом адаптера.
+- [x] Сверить начатый diff 1.5 с сохранённым baseline: downloads/commands/mod уже изменены, session.rs отсутствует. При реализации заменить недействующее объявление session на provider и привести частичные gates к интерфейсу выше. Завершённые 1.1–1.4 сохранить; восстановить компиляцию до расширения scope.
+- [x] Реализовать provider.rs с capture, простым open, CTC/RNNT dispatch и существующим TranscriptionProvider. Отдельные SessionFactory/менеджеры операций не вводить.
+- [x] Завершить необходимый guard в текущем DownloadManager, crate-level manager access и module export. Не добавлять Tauri-команды и не менять настройки/маршруты приложения в этой истории.
+- [x] Addressed tests: допустимые четыре ID/языки и ошибки capture; неизменная идентичность/hint; локальная сериализация; clone/drop и удержание blocking worker после drop awaiter; запрет publication при guard и разрешение после последнего использования. Использовать малые fixtures/локальные callbacks существующего пути, без production mock-engine framework и без отдельной fake recording queue/save.
+- [x] Выполнить targeted Windows compile/unit checks текущей копии. Не повторять model-backed smoke четырёх неизменённых движков только ради wrapper: реальный путь через provider проверяется в 1.7–1.9. Если изменены вычислительный код/пакет/runtime или найден регресс — повторить соответствующий engine smoke.
+- [x] Записать gigaam-sessions-verification.md с командами, исходной версией, результатами и ограничениями. Не объявлять запись/импорт/сохранение проверенными тестом адаптера.
 
 **Acceptance Criteria:**
 
@@ -121,3 +123,22 @@ Shared code map (revision 3 implementation): `frontend/src-tauri/src/model_suppo
 ## CC-2 — revision 3
 
 По прямому запросу пользователя пересмотрены и готовые 1.1–1.4. Добавлена фаза A двух общих функций; исключение для ограниченного изменения Parakeet и соответствующий targeted regression обязательны. Старые статус/evidence не подтверждают эту консолидацию. Код здесь не менялся.
+
+## Review Triage Log — revision 3
+
+| ID | Verdict | Route | Evidence |
+| --- | --- | --- | --- |
+| B1 | low | reject | Flush failure replaces helper transfer error, as preservation errors could in prior Parakeet code; manager finish_download checks cancellation token and returns typed cancellation. Combined I/O failures are exceptional; adding a new compound-error policy is not warranted here. |
+| B2 | low | patch | Parakeet call lost artifact filename in diagnostics; attach context without changing downcast or public interface. |
+| B3 | medium | patch | Existing manager tests cover normal/resume/cancel but do not isolate timeout/flush/error branches of shared helper; add small direct fixtures. |
+| B4 | low | reject | Abandoned-load injection would add a new loader abstraction solely for tests. Closure owns guard directly through load; no observed premature release. Native open coverage is separately accepted as V1 without introducing a mock loader. |
+| B5 | low | reject | Busy publication after transfer preserves final and reports error as specified; earlier busy refusal or staging recovery adds new policy for uncommon repair-while-active case. No integrity failure demonstrated. |
+| B6 | low | reject | yield_now does not prove the second worker reached mutex, but production lock is directly held across callback and the test also checks single active callback and completion. New test checkpoint machinery is disproportionate for this coverage enhancement. |
+| E | false | none | Edge-case reviewer returned no findings. |
+| V1 | medium | patch | Callback test bypasses open; actual family dispatch/manager lease are unverified by current tests. Add targeted native open smoke for one CTC and one RNNT using existing fixtures; no deferral or production injection required. |
+
+Исправления B2/B3/V1 выполнены, targeted Windows checks PASS; исторические evidence и пользовательские требования не менялись для сокрытия ошибок.
+
+## Completion — 2026-10-31
+
+Обе фазы реализованы. После независимого ревью приняты B2/B3/V1, исправлены минимальными patch; повторные адресные проверки прошли. Отчёт: [gigaam-sessions-verification.md](gigaam-sessions-verification.md). 49 unit tests PASS; CTC/RNNT engine smoke всех четырёх моделей и отдельный actual-provider smoke двух семейств PASS. Код и Windows-копия сверены. Реальные recording/import/retranscription пока не подключены и не объявляются проверенными. Статус spec done, sprint review; новых deferred findings нет. По прямым правилам проекта commit/push без запроса не выполнялись.
